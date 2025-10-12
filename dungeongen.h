@@ -10,14 +10,14 @@
 #include <cstdint>
 // strings! 
 #include <string>
-#include <iostream>
+#include <stdexcept>
 
 /* Class that stores a matrix of unsigned 8-bit integers
  * Can be an arbitrary size
  */
 class ByteMatrix2D
 {
-    private:
+    protected:
         // stores the width and height of the matrix
         uint16_t width;
         uint16_t height;
@@ -28,6 +28,8 @@ class ByteMatrix2D
     public:
         // constructor
         ByteMatrix2D(uint16_t w, uint16_t h);
+        // default constructor :sob:
+        ByteMatrix2D();
         // destructor
         ~ByteMatrix2D();
 
@@ -39,14 +41,34 @@ class ByteMatrix2D
         std::string as_str(std::string seperator = "");
 };
 
+// namespace that stores all tiles and their corresponding IDs
+namespace TILES
+{
+    const uint8_t EMPTY         = 'x';
+    const uint8_t WALL          = '~';
+    const uint8_t FLOOR         = '0';
+    const uint8_t PLAYER_SPAWN  = 'P';
+    const uint8_t TREASURE      = 'T';
+    const uint8_t DOOR          = 'D';
+};
+
+
 /* Class that stores the dungeon map
  * Stores a dynamically allocated 2d array, defined in ByteMatrix2D
  */
-class DungeonMap 
+class DungeonMap: public ByteMatrix2D
 {
     private:
-        // stores the tile id at each coordinate in the dungeon
-        ByteMatrix2D dungeon_matrix;
+        uint16_t max_room_side_len;
+        uint32_t num_tiles;
+    public: 
+        // constructor
+        DungeonMap(uint16_t side_len, uint16_t max_room_len);
+
+        // converts matrix to a string using the tiles
+        std::string as_tile_str();
+        // generates the dungeon
+        void generate(int32_t seed);
 };
 
 #endif

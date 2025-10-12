@@ -5,10 +5,6 @@
 
 #include "dungeongen.h"
 
-#include <stdexcept>
-#include <string>
-#include <iomanip>
-
 /* Constructor for the `ByteMatrix2D` class
  * dynamically allocates a 2D array based off of the parameters given
  */
@@ -24,13 +20,25 @@ ByteMatrix2D::ByteMatrix2D(uint16_t w, uint16_t h)
     matrix = new uint8_t[w * h]{0};
 }
 
+/* Default constructor for the `ByteMatrix2D` class
+ * Exists just so the compiler won't yell at me 
+ * Initializes everything to 0 or nullptr
+ */
+ByteMatrix2D::ByteMatrix2D()
+{
+    width = 0;
+    height = 0;
+    matrix = nullptr;
+}
+
 /* Destructor for the `ByteMatrix2D` class
  * ensures `matrix` is freed
  */
 ByteMatrix2D::~ByteMatrix2D()
 {
     // square brackets used here since `matrix` is an array
-    delete[] matrix;
+    if (matrix != nullptr)
+        delete[] matrix;
 }
 
 /* Returns the value at a specified coordinate in `matrix`
@@ -51,7 +59,7 @@ uint8_t ByteMatrix2D::get(uint16_t x, uint16_t y)
             + to_string(width) + " x " + to_string(height));
     }
 
-    // moves the pointer to the `x`th row, and the `y`th column
+    // moves the pointer to the `x`th row, and the `y`th column (i think)
     return *(matrix + (width * y) + x);
 }
 
@@ -83,18 +91,9 @@ std::string ByteMatrix2D::as_str(std::string seperator)
 {
     using namespace std;
 
-    // code used for testing, only should be uncommented if an issue with this function appears 
-    /*
-    for (uint16_t i = 0; i < width * height; ++i)
-    {
-        cout << to_string(matrix[i]) << seperator;
-    }
-    cout << endl << endl;
-    */
-
     string rtrnval = "";
 
-    for (uint16_t i = 0; i < width * height; ++i)
+    for (uint32_t i = 0; i < width * height; ++i)
     {
         const uint8_t VAL = matrix[i]; 
         // add leading zeroes

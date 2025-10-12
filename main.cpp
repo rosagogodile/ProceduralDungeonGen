@@ -1,26 +1,16 @@
 #include <iostream>
+#include <ctime>
 #include "dungeongen.h"
 
 using namespace std;
 
 int main(int argc, char ** argv)
 {
-    int width = 9;
-    int height = 9;
-    ByteMatrix2D test(width,height);
+    DungeonMap test(25, 10);
 
-    int count = 0;
+    test.generate(time(NULL));
 
-    for (int i = 0; i < width; ++i)
-    {
-        for (int j = 0; j < height; ++j)
-        {
-            test.set(i, j, count);
-            count++;
-        }
-    }
-
-    cout << test.as_str("\t") << endl;
+    cout << test.as_tile_str() << endl;
 
     return 0;
 }
