@@ -58,9 +58,17 @@ namespace TILES
  */
 struct coordinate_pair
 {
-    uint16_t x;
-    uint16_t y;
+    uint16_t X;
+    uint16_t Y;
 };
+
+// struct room_pairs
+// {
+//     coordinate_pair top_left;
+//     coordinate_pair top_right;
+//     coordinate_pair bottom_left;
+//     coordinate_pair bottom_right;
+// };
 
 
 /* Class that stores the dungeon map
@@ -75,7 +83,9 @@ class DungeonMap: public ByteMatrix2D
 
         std::mt19937 rng;
 
-        void place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+        void place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool downwards);
+
+        std::vector<coordinate_pair> room_coords;
 
     public: 
         // constructor

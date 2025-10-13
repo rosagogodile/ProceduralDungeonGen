@@ -25,6 +25,8 @@ DungeonMap::DungeonMap(uint16_t side_len, uint16_t min_room_len, uint16_t max_ro
     max_room_side_len = max_room_len;
     // stores the minimum side length for a room in the dungeon 
     min_room_side_len = min_room_len;
+
+    room_coords = {};
 }
 
 /* Converts matrix to a string using the tile representations of each of the ids in the matrix
@@ -61,7 +63,7 @@ std::string DungeonMap::as_tile_str()
  * w -> width of room
  * h -> height of room
  */
-void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool downwards)
 {
     using namespace std; 
 
@@ -69,6 +71,16 @@ void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
     if (x + w >= width || y + h >= height)
         return;
     
+    // place coordinate pair for the top-right corner of the room in the vector of coordinate pairs
+    // (only if we are on the initial run where each of the rooms on the left are placed)
+    if (downwards)
+    {
+        coordinate_pair topleft_coord;
+        topleft_coord.X = x + w;
+        topleft_coord.Y = y;
+        room_coords.push_back(topleft_coord);
+    }
+
     // place room in the array
     // only places the general shape of the room
     for (uint16_t i = 0; i < w; ++i)
@@ -88,9 +100,14 @@ void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
     }
 
     // place room below new room
-    place_room(x, y + h - 1, 
-    rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, 
-    rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len);
+    if (downwards)
+        place_room(x, y + h - 1, 
+        rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, 
+        rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, downwards);
+    else
+        place_room(x + w - 1, y, 
+        rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, 
+        rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, downwards); 
 
     // place room to the right of the new room
     // place_room(x + (rng() % (w - 1)), y, 
@@ -98,6 +115,8 @@ void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
     // rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len);
 }
 
+
+#include <iostream>
 
 /* Generate the dungeon map
  * Will place tiles based off their corresponding ids in the `TILES` namespace
@@ -122,5 +141,15 @@ void DungeonMap::generate(int32_t seed)
     uint16_t x_coord = 0, y_coord = 0;
 
     // fill in the first room, and recursively fill in the rest
-    place_room(x_coord, y_coord, room_width, room_height);
+    place_room(x_coord, y_coord, room_width, room_height, true);
+
+    for (coordinate_pair c : room_coords)
+    {
+        cout << "X = " << to_string(c.X) << ", Y = " << to_string(c.Y) << endl;
+
+        uint8_t room_width  = rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len;
+        uint8_t room_height = rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len;
+
+        place_room(c.X, c.Y, room_width, room_height, false);
+    }
 }
