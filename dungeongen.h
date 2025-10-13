@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/12/2025
+ * 10/13/2025
  * Header file for classes, functions, and constants that are used for generating dungeon maps
  */
 
@@ -11,6 +11,8 @@
 // strings! 
 #include <string>
 #include <stdexcept>
+#include <random>
+#include <vector>
 
 /* Class that stores a matrix of unsigned 8-bit integers
  * Can be an arbitrary size
@@ -44,12 +46,20 @@ class ByteMatrix2D
 // namespace that stores all tiles and their corresponding IDs
 namespace TILES
 {
-    const uint8_t EMPTY         = 'x';
+    const uint8_t EMPTY         = ' ';
     const uint8_t WALL          = '~';
     const uint8_t FLOOR         = '0';
     const uint8_t PLAYER_SPAWN  = 'P';
     const uint8_t TREASURE      = 'T';
     const uint8_t DOOR          = 'D';
+};
+
+/* Struct that stores a single x, y coordinate pair
+ */
+struct coordinate_pair
+{
+    uint16_t x;
+    uint16_t y;
 };
 
 
@@ -60,10 +70,16 @@ class DungeonMap: public ByteMatrix2D
 {
     private:
         uint16_t max_room_side_len;
+        uint16_t min_room_side_len;
         uint32_t num_tiles;
+
+        std::mt19937 rng;
+
+        void place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
     public: 
         // constructor
-        DungeonMap(uint16_t side_len, uint16_t max_room_len);
+        DungeonMap(uint16_t side_len, uint16_t min_room_len, uint16_t max_room_len);
 
         // converts matrix to a string using the tiles
         std::string as_tile_str();
