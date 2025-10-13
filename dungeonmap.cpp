@@ -5,6 +5,13 @@
 
 #include "dungeongen.h"
 
+// define this if the program is testing
+#define TESTING
+
+#ifdef TESTING
+#include <iostream>
+#endif
+
 /* Constructor for the `DungeonMap` class
  * Inherits the `ByteMatrix2D` constructor, and forces the side lengths to be equal
  * Calls the constructor for `ByteMatrix2D`, and then forces each element in the matrix to be the empty tile
@@ -20,6 +27,7 @@ DungeonMap::DungeonMap(uint16_t side_len, uint16_t min_room_len, uint16_t max_ro
     // stores the total number of tiles in the dungeon
     // will always be a perfect square!
     num_tiles = side_len * side_len;
+    blank_tiles = num_tiles;
 
     // stores the maximum side length for a room in the dungeon
     max_room_side_len = max_room_len;
@@ -63,26 +71,13 @@ std::string DungeonMap::as_tile_str()
  * w -> width of room
  * h -> height of room
  */
-void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool downwards)
+void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
     using namespace std; 
 
-    // break out of recursion
-    if (x + w >= width || y + h >= height)
-        return;
-    
-    // place coordinate pair for the top-right corner of the room in the vector of coordinate pairs
-    // (only if we are on the initial run where each of the rooms on the left are placed)
-    if (downwards)
-    {
-        coordinate_pair topleft_coord;
-        topleft_coord.X = x + w;
-        topleft_coord.Y = y;
-        room_coords.push_back(topleft_coord);
-    }
-
-    // place room in the array
+    // place room in the matrix
     // only places the general shape of the room
+    /*
     for (uint16_t i = 0; i < w; ++i)
     {
         for (uint16_t j = 0; j < h; ++j)
@@ -98,25 +93,23 @@ void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h, bool
             }
         }
     }
+    */
 
-    // place room below new room
-    if (downwards)
-        place_room(x, y + h - 1, 
-        rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, 
-        rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, downwards);
-    else
-        place_room(x + w - 1, y, 
-        rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, 
-        rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, downwards); 
+    // place room coordinates in vector of room coordinates
+    RoomPairs temp;
+    // initialize coordinate pairs using struct initializer lists
+    temp.top_left = {x, y};
+    temp.top_right = {(uint16_t)(x + w), y};
+    temp.bottom_left = {x , (uint16_t)(y + h)};
+    temp.bottom_right = {(uint16_t)(x + w), (uint16_t)(y + h)};
+    temp.middle = {(uint16_t)((x + x + w) / 2), (uint16_t)((y + y + h) / 2)};
+    room_coords.push_back(temp);
 
-    // place room to the right of the new room
-    // place_room(x + (rng() % (w - 1)), y, 
-    // rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len, 
-    // rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len);
+    // remove number of tiles placed from the total number of blank tiles
+    blank_tiles -= w * h;
 }
 
 
-#include <iostream>
 
 /* Generate the dungeon map
  * Will place tiles based off their corresponding ids in the `TILES` namespace
@@ -132,24 +125,26 @@ void DungeonMap::generate(int32_t seed)
     // the minimum number of blank tiles needed for the placement loop to continue
     const uint32_t MIN_BLANK_TILES = max_room_side_len * max_room_side_len;
 
-    // generate random size for the initial room
-    uint8_t room_width  = rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len;
-    uint8_t room_height = rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len;
-
     // stores the top-left coordinates of the room that the function is currently working on
     // always starts in the top-left corner
     uint16_t x_coord = 0, y_coord = 0;
+    
+    // generate random size for the room
+    uint8_t room_width  = rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len;
+    uint8_t room_height = rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len;
 
-    // fill in the first room, and recursively fill in the rest
-    place_room(x_coord, y_coord, room_width, room_height, true);
+    // fill in the first room
+    place_room(x_coord, y_coord, room_width, room_height);
 
-    for (coordinate_pair c : room_coords)
+    // print room coordinates, used for testing
+    #ifdef TESTING
+    for (RoomPairs rp : room_coords)
     {
-        cout << "X = " << to_string(c.X) << ", Y = " << to_string(c.Y) << endl;
-
-        uint8_t room_width  = rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len;
-        uint8_t room_height = rng() % (max_room_side_len - min_room_side_len + 1) + min_room_side_len;
-
-        place_room(c.X, c.Y, room_width, room_height, false);
+        cout << "(" << to_string(rp.top_left.X) << ", " << to_string(rp.top_left.Y) << "), ";
+        cout << "(" << to_string(rp.top_right.X) << ", " << to_string(rp.top_right.Y) << "), ";
+        cout << "(" << to_string(rp.bottom_left.X) << ", " << to_string(rp.bottom_left.Y) << "), ";
+        cout << "(" << to_string(rp.bottom_right.X) << ", " << to_string(rp.bottom_right.Y) << "), ";
+        cout << "(" << to_string(rp.middle.X) << ", " << to_string(rp.middle.Y) << ")" << endl;
     }
+    #endif
 }

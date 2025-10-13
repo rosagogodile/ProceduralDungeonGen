@@ -1,5 +1,5 @@
 # Rosa Knowles 
-# 10/12/2025
+# 10/13/2025
 # Makefile for the procedural dungeon generator
 
 OUTPUT_FOLDER := out
@@ -24,6 +24,8 @@ $(OUTPUT_FOLDER)/$(TARGET).exe: main.cpp $(OUTPUT_FOLDER)/libdungeongen.a
 	g++ -Wall -o $(OUTPUT_FOLDER)/$(TARGET).exe main.cpp -L ./$(OUTPUT_FOLDER) -ldungeongen
 
 # removes all compiled executables and libraries 
+# also removes all compiled object files, in the event that compilation fails for something else
 clean:
 	rm -f $(OUTPUT_FOLDER)/$(TARGET).exe
 	rm -f $(OUTPUT_FOLDER)/*.a
+	rm -f *.o
