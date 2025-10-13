@@ -41,17 +41,20 @@ class ByteMatrix2D
         void set(uint16_t x, uint16_t y, uint8_t val);
         // converts matrix to a string, useful for printing 
         std::string as_str(std::string seperator = "");
+
+        // getters
+        uint16_t get_width();
+        uint16_t get_height();
 };
 
 // namespace that stores all tiles and their corresponding IDs
 namespace TILES
 {
-    const uint8_t EMPTY         = ' ';
-    const uint8_t WALL          = '~';
+    const uint8_t EMPTY         = '-';
+    const uint8_t WALL          = 'X';
     const uint8_t FLOOR         = '0';
     const uint8_t PLAYER_SPAWN  = 'P';
     const uint8_t TREASURE      = 'T';
-    const uint8_t DOOR          = 'D';
 };
 
 /* Struct that stores a single x, y coordinate pair
@@ -71,33 +74,38 @@ struct RoomPairs
     CoordinatePair top_right;
     CoordinatePair bottom_left;
     CoordinatePair bottom_right;
-    CoordinatePair middle;
+    CoordinatePair center;
 };
+
+bool check_overlap(RoomPairs a, RoomPairs b);
+RoomPairs shift(RoomPairs a, CoordinatePair b);
 
 
 /* Class that stores the dungeon map
  * Stores a dynamically allocated 2d array, defined in ByteMatrix2D
  */
-class DungeonMap: public ByteMatrix2D
+class DungeonMap
 {
     private:
         uint16_t max_room_side_len;
         uint16_t min_room_side_len;
-        uint32_t num_tiles;
-        uint32_t blank_tiles;
+        uint8_t  total_num_rooms;
 
-        std::mt19937 rng;
+        std::mt19937            rng;
+        std::vector<RoomPairs>  room_coords;
+
+        ByteMatrix2D * matrix_rep = nullptr;
 
         void place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
-        std::vector<RoomPairs> room_coords;
-
     public: 
         // constructor
-        DungeonMap(uint16_t side_len, uint16_t min_room_len, uint16_t max_room_len);
+        DungeonMap(uint16_t min_room_len, uint16_t max_room_len, uint8_t num_rooms);
+        // destructor
+        ~DungeonMap();
 
         // converts matrix to a string using the tiles
-        std::string as_tile_str();
+        std::string as_str();
         // generates the dungeon
         void generate(int32_t seed);
 };

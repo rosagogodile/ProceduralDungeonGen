@@ -6,11 +6,11 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-    DungeonMap test(30, 4, 10);
+    DungeonMap test(6, 10, 15);
 
     test.generate(time(NULL));
 
-    cout << test.as_tile_str() << endl;
+    cout << test.as_str() << endl;
 
     return 0;
 }

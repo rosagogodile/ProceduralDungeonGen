@@ -1,3 +1,4 @@
 .vscode/settings.json
 out/main.exe
 out/libdungeongen.a
+out/main.txt

@@ -9,6 +9,11 @@ TARGET := main
 run: $(OUTPUT_FOLDER)/$(TARGET).exe
 	./$(OUTPUT_FOLDER)/$(TARGET).exe
 
+# compile and then run the program
+# use a redirect to store the output in a txt file
+txt: $(OUTPUT_FOLDER)/$(TARGET).exe
+	./$(OUTPUT_FOLDER)/$(TARGET).exe > $(OUTPUT_FOLDER)/$(TARGET).txt
+
 # compiles the dungeon gen library into an object file
 # packs it into a static library using the archiver command 
 # removes the object file
@@ -29,3 +34,4 @@ clean:
 	rm -f $(OUTPUT_FOLDER)/$(TARGET).exe
 	rm -f $(OUTPUT_FOLDER)/*.a
 	rm -f *.o
+	rm -f $(OUTPUT_FOLDER)/$(TARGET).txt

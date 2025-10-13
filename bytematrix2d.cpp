@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/12/2025
+ * 10/13/2025
  * Definitions for the methods of `ByteMatrix2D`
  */
 
@@ -120,4 +120,15 @@ std::string ByteMatrix2D::as_str(std::string seperator)
 
     // removes the last newline in the string, and returns it
     return rtrnval.erase(rtrnval.size() - 1);
+}
+
+// Getters
+// (self explanatory)
+uint16_t ByteMatrix2D::get_width()
+{
+    return width;
+}
+uint16_t ByteMatrix2D::get_height()
+{
+    return height;
 }
