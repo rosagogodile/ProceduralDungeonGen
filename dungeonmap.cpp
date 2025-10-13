@@ -297,7 +297,10 @@ void DungeonMap::generate(int32_t seed)
         {
             for (uint16_t j = 0; j < (rp.bottom_right.X - x_coord); ++j)
             {
-                matrix_rep->set(x_coord + j, y_coord + i, TILES::FLOOR);
+                if (i * j == 0 || i == rp.bottom_right.Y - y_coord - 1 || j == rp.bottom_right.X - x_coord - 1)
+                    matrix_rep->set(x_coord + j, y_coord + i, TILES::WALL);
+                else
+                    matrix_rep->set(x_coord + j, y_coord + i, TILES::FLOOR);
             }
         }
     }
