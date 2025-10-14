@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/13/2025
+ * 10/14/2025
  * Header file for classes, functions, and constants that are used for generating dungeon maps
  */
 
@@ -96,7 +96,9 @@ class DungeonMap
 
         ByteMatrix2D * matrix_rep = nullptr;
 
+        // private functions that will be called inside of `generate`
         void place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+        void generate_rooms();
 
     public: 
         // constructor

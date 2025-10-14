@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/13/2025
+ * 10/14/2025
  * Definitions for the methods of `DungeonMap`
  */
 
@@ -141,31 +141,35 @@ void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 }
 
 
+
+
 /* Pseudocode: 
  * https://vazgriz.com/119/procedurally-generated-dungeons/
  
  * Place rooms such that they don't overlap
  * Create Delaunay Triangulation Graph of Rooms(???)
  *      - Essentially, this is a triangular mesh that will have the center of each room as a vertex
- *      - I will use the Bowyer-Watson algorithm for this
+ *      - I will use the Bowyer-Watson algorithm for this: https://paulbourke.net/papers/triangulate/
  * Create a Minimum Spanning Tree from the triangulation
  *      - I will use Prim's algorithm for this
  * Randomly add connections from the Triangulation Graph into the tree
  * Use A* algorithm to find shortest path between each connected room, and build hallways from this
+ * Use the vector of room coordinates to place objects in each of the rooms 
 
  */
 
 
-/* Generate the dungeon map
- * Will place tiles based off their corresponding ids in the `TILES` namespace
- * `seed` is a 32-bit integer that defines the random seed for this map generation
+
+
+
+/* Private Function
+ * PART 1
+ * Place rooms so they don't overlap
+ * Generate rooms, and randomly place them until they don't overlap
  */
-void DungeonMap::generate(int32_t seed)
+void DungeonMap::generate_rooms()
 {
     using namespace std;
-
-    // setup random number generator (including setting its seed)
-    rng = mt19937(seed);
 
     // stores the top-left coordinates of the room that the function is currently working on
     // always starts in the top-left corner
@@ -297,6 +301,7 @@ void DungeonMap::generate(int32_t seed)
         {
             for (uint16_t j = 0; j < (rp.bottom_right.X - x_coord); ++j)
             {
+                // place walls on the outside of the rooms, floors on the inside
                 if (i * j == 0 || i == rp.bottom_right.Y - y_coord - 1 || j == rp.bottom_right.X - x_coord - 1)
                     matrix_rep->set(x_coord + j, y_coord + i, TILES::WALL);
                 else
@@ -304,4 +309,19 @@ void DungeonMap::generate(int32_t seed)
             }
         }
     }
+}
+
+
+/* Generate the dungeon map
+ * Will place tiles based off their corresponding ids in the `TILES` namespace
+ * `seed` is a 32-bit integer that defines the random seed for this map generation
+ */
+void DungeonMap::generate(int32_t seed)
+{
+    using namespace std;
+
+    // setup random number generator (including setting its seed)
+    rng = mt19937(seed);
+
+    generate_rooms();
 }
