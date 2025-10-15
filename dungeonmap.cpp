@@ -312,6 +312,18 @@ void DungeonMap::generate_rooms()
 }
 
 
+// struct that stores an edge (two points)
+// blank namespace b/c these should only be used within this file
+namespace
+{
+    struct Edge
+    {
+        CoordinatePair a;
+        CoordinatePair b;
+    };
+};
+
+
 /* Private Function
  * PART 2
  * Bowyer-Watson algorithm to create Delaunay Triangulation
@@ -349,9 +361,15 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
 
     triangle_list.push_back(super_triangle);
 
+    vector<Edge> edge_buffer;
+
     for (auto vertex : vertex_list)
     {
-
+        for (auto tr: triangle_list)
+        {
+            // find circumcircle for `tr`
+            // https://en.wikipedia.org/wiki/Circumcircle#Circumcenter_coordinates
+        }
     }
 
 
