@@ -312,15 +312,19 @@ void DungeonMap::generate_rooms()
 }
 
 
-// struct that stores an edge (two points)
+
 // blank namespace b/c these should only be used within this file
 namespace
 {
+    // struct that stores an edge (two points)
     struct Edge
     {
         CoordinatePair a;
         CoordinatePair b;
     };
+
+    // constant used for floating point comparisons
+    constexpr EPSILON = 1e-4;
 };
 
 
@@ -331,6 +335,7 @@ namespace
  */
 std::vector<Triangle> DungeonMap::Bowyer_Watson()
 {
+    // https://paulbourke.net/papers/triangulate/
     using namespace std;
 
     // initialize and fill vertex list
@@ -361,14 +366,60 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
 
     triangle_list.push_back(super_triangle);
 
-    vector<Edge> edge_buffer;
-
     for (auto vertex : vertex_list)
     {
+        // set that stores valid edges
+        set<Edge> edge_buffer{};
+
+        // list that stores the new collection of triangles after the algorithm removed invalid triangles
+        vector<Triangle> temp_triangle_list = triangle_list; 
+
         for (auto tr: triangle_list)
         {
             // find circumcircle for `tr`
             // https://en.wikipedia.org/wiki/Circumcircle#Circumcenter_coordinates
+
+            // let p1 = A, p2 = B, p3 = C (from the formula on wikipedia)
+
+            const double DENOMINATOR = 2 * 
+            (
+                (tr.p1.X * (tr.p2.Y - tr.p3.Y)) +
+                (tr.p2.X * (tr.p3.Y - tr.p1.Y)) +
+                (tr.p3.X * (tr.p1.Y - tr.p2.Y))
+            );
+
+            // Calculate X and Y coordinate of the circumcenter
+
+            const double CCX = 
+                (((pow(tr.p1.X, 2.0) + pow(tr.p1.Y, 2.0)) * (tr.p2.Y - tr.p3.Y)) +
+                ((pow(tr.p2.X, 2.0) + pow(tr.p2.Y, 2.0)) * (tr.p3.Y - tr.p1.Y)) +
+                ((pow(tr.p3.X, 2.0) + pow(tr.p3.Y, 2.0)) * (tr.p1.Y - tr.p2.Y))) / DENOMINATOR;
+
+            const double CCY = 
+                (((pow(tr.p1.X, 2.0) + pow(tr.p1.Y, 2.0)) * (tr.p3.X - tr.p2.X)) +
+                ((pow(tr.p2.X, 2.0) + pow(tr.p2.Y, 2.0)) * (tr.p1.X - tr.p3.X)) +
+                ((pow(tr.p3.X, 2.0) + pow(tr.p3.Y, 2.0)) * (tr.p2.X - tr.p1.X))) / DENOMINATOR;
+
+            // Calculate radius
+            // since all three points sit on the circle, the radius will be the distance between the circumcenter and any one of these points
+            // I'm choosing to calculate the distance between the circumcenter and `p1` = A
+            const double CCR = sqrt(pow(tr.p1.X - CCX, 2.0) + pow(tr.p1.Y - CCY, 2.0));
+
+            // check if `vertex` lies within this circle
+            // if the distance between the circumcenter and vetex is less than the circumradius,
+            // it is contained within the circumcircle
+            const double CCR_VERTEX_DIST = sqrt(pow(vertex.X - CCX, 2.0) + pow(vertex.Y - CCY, 2.0));
+
+            // check if distance between the circumcenter and vertex is less than the circumradius
+            if ((CCR_VERTEX_DIST - CCR) <= EPSILON)
+            {
+                // add 3 triangle edges to edge buffer
+                // remove triangle from triangle list
+
+
+            }
+
+
         }
     }
 
