@@ -317,14 +317,20 @@ void DungeonMap::generate_rooms()
 namespace
 {
     // struct that stores an edge (two points)
+    // hashable!! -> https://www.geeksforgeeks.org/cpp/implement-custom-hash-functions-for-user-defined-types-in-std-unordered_map/
     struct Edge
     {
         CoordinatePair a;
         CoordinatePair b;
+
+        bool operator==(const Edge & other) const
+        {
+
+        }
     };
 
     // constant used for floating point comparisons
-    constexpr EPSILON = 1e-4;
+    constexpr double EPSILON = 1e-4;
 };
 
 
@@ -369,7 +375,7 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
     for (auto vertex : vertex_list)
     {
         // set that stores valid edges
-        set<Edge> edge_buffer{};
+        unordered_set<Edge> edge_buffer;
 
         // list that stores the new collection of triangles after the algorithm removed invalid triangles
         vector<Triangle> temp_triangle_list = triangle_list; 
@@ -416,6 +422,48 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
                 // add 3 triangle edges to edge buffer
                 // remove triangle from triangle list
 
+                // make sure the edges are initialzed such that the point with the 
+                // smaller x value is first
+                // should help to ensure edges aren't duplicated
+                Edge e1, e2, e3;
+
+                // i love spamming if/else blocks!!!!
+                if (tr.p1.X <= tr.p2.X)
+                {
+                    e1.a = tr.p1;
+                    e1.b = tr.p2;
+                }
+                else
+                {
+                    e1.a = tr.p2;
+                    e1.b = tr.p1;
+                }
+
+                if (tr.p2.X <= tr.p3.X)
+                {
+                    e1.a = tr.p2;
+                    e1.b = tr.p3;
+                }
+                else
+                {
+                    e1.a = tr.p3;
+                    e1.b = tr.p2;
+                }
+
+                if (tr.p1.X <= tr.p3.X)
+                {
+                    e1.a = tr.p1;
+                    e1.b = tr.p3;
+                }
+                else
+                {
+                    e1.a = tr.p3;
+                    e1.b = tr.p1;
+                }
+
+                edge_buffer.insert(e1);
+                edge_buffer.insert(e2);
+                edge_buffer.insert(e3);
 
             }
 
@@ -441,4 +489,6 @@ void DungeonMap::generate(int32_t seed)
     rng = mt19937(seed);
 
     generate_rooms();
+
+    vector<Triangle> triangle_list = Bowyer_Watson();
 }

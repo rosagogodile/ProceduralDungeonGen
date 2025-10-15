@@ -15,7 +15,7 @@
 #include <vector>
 // mainly used for calculating the circumcircle of a triangle
 #include <cmath>
-#include <set>
+#include <unordered_set>
 
 /* Class that stores a matrix of unsigned 8-bit integers
  * Can be an arbitrary size
