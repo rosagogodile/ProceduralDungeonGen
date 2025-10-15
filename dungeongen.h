@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/14/2025
+ * 10/15/2025
  * Header file for classes, functions, and constants that are used for generating dungeon maps
  */
 
@@ -61,8 +61,8 @@ namespace TILES
  */
 struct CoordinatePair
 {
-    uint16_t X;
-    uint16_t Y;
+    int32_t X;
+    int32_t Y;
 };
 
 /* Struct that stores the coorindates for a room
@@ -79,6 +79,16 @@ struct RoomPairs
 
 bool check_overlap(RoomPairs a, RoomPairs b);
 RoomPairs shift(RoomPairs a, CoordinatePair b);
+
+/* Struct that stores a triangle using three `CoordinatePair` structs
+ * Will be used to create the triangulation
+ */
+struct Triangle
+{
+    CoordinatePair p1;
+    CoordinatePair p2;
+    CoordinatePair p3;
+};
 
 
 /* Class that stores the dungeon map
@@ -99,6 +109,7 @@ class DungeonMap
         // private functions that will be called inside of `generate`
         void place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
         void generate_rooms();
+        std::vector<Triangle> Bowyer_Watson();
 
     public: 
         // constructor

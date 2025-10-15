@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/14/2025
+ * 10/15/2025
  * Definitions for the methods of `DungeonMap`
  */
 
@@ -225,8 +225,8 @@ void DungeonMap::generate_rooms()
             CoordinatePair shifter = 
             {
                 // casting to `int32_t` here so g++ doesn't yell at me :P
-                (uint16_t)(rng() % MAX_SHIFT),
-                (uint16_t)(rng() % MAX_SHIFT)
+                (int32_t)(rng() % MAX_SHIFT),
+                (int32_t)(rng() % MAX_SHIFT)
             };
 
             temp_rp = shift(rp, shifter);
@@ -309,6 +309,54 @@ void DungeonMap::generate_rooms()
             }
         }
     }
+}
+
+
+/* Private Function
+ * PART 2
+ * Bowyer-Watson algorithm to create Delaunay Triangulation
+ * Returns a vector of `Triangle` structs
+ */
+std::vector<Triangle> DungeonMap::Bowyer_Watson()
+{
+    using namespace std;
+
+    // initialize and fill vertex list
+    // the vertex list will contain the center point of all the rooms
+    vector<CoordinatePair> vertex_list;
+
+    for (auto rp : room_coords)
+    {
+        vertex_list.push_back(rp.center);
+    }
+
+
+    vector<Triangle> triangle_list;
+
+    // DETERMINE SUPER TRIANGLE
+    // From a square of a * b (with a on the x-axis and b on the y-axis), we can construct a super triangle
+    // with a vertex at (-a/2, 0), (a/2, 2b), (3a/2, 0)
+    Triangle super_triangle =
+        // use initializer lists to create each of the vertices
+        { {(-1 * matrix_rep->get_width()) / 2, 0}, 
+        {matrix_rep->get_width() / 2, 2 * matrix_rep->get_height()},
+        {3 * matrix_rep->get_width() / 2, 0} };
+
+    // slap super triangle vertices into the vertex list
+    vertex_list.push_back(super_triangle.p1);
+    vertex_list.push_back(super_triangle.p2);
+    vertex_list.push_back(super_triangle.p3);
+
+    triangle_list.push_back(super_triangle);
+
+    for (auto vertex : vertex_list)
+    {
+
+    }
+
+
+    // return final list of triangles
+    return triangle_list;
 }
 
 

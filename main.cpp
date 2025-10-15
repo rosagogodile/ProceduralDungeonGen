@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-    DungeonMap test(6, 10, 15);
+    DungeonMap test(6, 10, 20);
 
     test.generate(time(NULL));
 
