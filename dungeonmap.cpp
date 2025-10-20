@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/15/2025
+ * 10/20/2025
  * Definitions for the methods of `DungeonMap`
  */
 
@@ -62,6 +62,21 @@ RoomPairs shift(RoomPairs a, CoordinatePair b)
     rtrnval.top_right.Y += b.Y;
 
     return rtrnval;
+}
+
+
+/* Operator overloads
+ * Overloads == for two of the structs declared in dungeongen.h
+ */
+
+bool operator==(const CoordinatePair & a, const CoordinatePair & b)
+{
+    return (a.X == b.X) && (a.Y == b.Y);
+}
+
+bool operator==(const Triangle & a, const Triangle & b)
+{
+    return (a.p1 == b.p1) && (a.p2 == b.p2) && (a.p3 == b.p3);
 }
 
 
@@ -317,15 +332,15 @@ void DungeonMap::generate_rooms()
 namespace
 {
     // struct that stores an edge (two points)
-    // hashable!! -> https://www.geeksforgeeks.org/cpp/implement-custom-hash-functions-for-user-defined-types-in-std-unordered_map/
     struct Edge
     {
         CoordinatePair a;
         CoordinatePair b;
 
-        bool operator==(const Edge & other) const
+        // overloaded equality operator for `Edge` struct
+        friend bool operator==(const Edge & a, const Edge & b)
         {
-
+            return a == b;
         }
     };
 
@@ -374,8 +389,8 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
 
     for (auto vertex : vertex_list)
     {
-        // set that stores valid edges
-        unordered_set<Edge> edge_buffer;
+        // list that stores valid edges
+        vector<Edge> edge_buffer;
 
         // list that stores the new collection of triangles after the algorithm removed invalid triangles
         vector<Triangle> temp_triangle_list = triangle_list; 
@@ -461,14 +476,65 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
                     e1.b = tr.p1;
                 }
 
-                edge_buffer.insert(e1);
-                edge_buffer.insert(e2);
-                edge_buffer.insert(e3);
+                edge_buffer.push_back(e1);
+                edge_buffer.push_back(e2);
+                edge_buffer.push_back(e3);
+
+
+                // remove triangle from triangle list 
+                // use erase-remove idiom -> https://www.geeksforgeeks.org/cpp/erase-remove-idiom-in-cpp/
+                auto logical_end = remove_if
+                (
+                    temp_triangle_list.begin(),
+                    temp_triangle_list.end(),
+                    [tr](Triangle z) { return z == tr; }
+                );
+                temp_triangle_list.erase(logical_end, temp_triangle_list.end());
 
             }
 
 
         }
+
+        // delete all doubly specified edges from edge buffer
+        // this section of the code is probably very inefficient but idgaf
+        // c++ is like... fast. so my code being shitty doesn't actually matter!! :3
+
+        // lambda that checks if an edge is contained within the list more than once
+        auto check_if_edge_doubly_specified = [edge_buffer](Edge z)
+        {
+            uint8_t count = 0;
+
+            for (auto a : edge_buffer)
+            {
+                if (a == z)
+                    count++;
+
+                if (count > 1)
+                    return true;
+            }
+
+            return false;
+        };
+
+        // erase-remove idiom here!!
+        auto logical_end =
+        (
+            edge_buffer.begin(),
+            edge_buffer.end(),
+            check_if_edge_doubly_specified
+        );
+        edge_buffer.erase(logical_end, edge_buffer.end());
+
+        // print edge buffer if testing
+        #ifdef TESTING
+            cout << "EDGE BUFFER:" << endl;
+            for (auto e : edge_buffer)
+            {
+                cout << "(" << e.a.X << ", " << e.a.Y << ") <--> ("
+                << e.b.X << ", " << e.b.Y << ")" << endl;
+            }
+        #endif
     }
 
 

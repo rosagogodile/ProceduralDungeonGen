@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/15/2025
+ * 10/20/2025
  * Header file for classes, functions, and constants that are used for generating dungeon maps
  */
 
@@ -15,7 +15,7 @@
 #include <vector>
 // mainly used for calculating the circumcircle of a triangle
 #include <cmath>
-#include <unordered_set>
+#include <algorithm>
 
 /* Class that stores a matrix of unsigned 8-bit integers
  * Can be an arbitrary size
@@ -66,6 +66,8 @@ struct CoordinatePair
 {
     int32_t X;
     int32_t Y;
+
+    friend bool operator==(const CoordinatePair & a, const CoordinatePair & b);
 };
 
 /* Struct that stores the coorindates for a room
@@ -91,6 +93,8 @@ struct Triangle
     CoordinatePair p1;
     CoordinatePair p2;
     CoordinatePair p3;
+
+    friend bool operator==(const Triangle & a, const Triangle & b);
 };
 
 
