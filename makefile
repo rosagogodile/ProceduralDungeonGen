@@ -22,7 +22,7 @@ DUNGEONGEN_OBJS  := $(DUNGEONGEN_FILES:.cpp=.o)
 $(OUTPUT_FOLDER)/libdungeongen.a: dungeongen.h $(DUNGEONGEN_FILES)
 	g++ -c $(DUNGEONGEN_FILES)
 	ar rcs $(OUTPUT_FOLDER)/libdungeongen.a $(DUNGEONGEN_OBJS)
-	rm -f *.o
+	# rm -f *.o
 
 # compiles the program
 $(OUTPUT_FOLDER)/$(TARGET).exe: main.cpp $(OUTPUT_FOLDER)/libdungeongen.a
