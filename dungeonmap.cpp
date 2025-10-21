@@ -338,9 +338,9 @@ namespace
         CoordinatePair b;
 
         // overloaded equality operator for `Edge` struct
-        friend bool operator==(const Edge & a, const Edge & b)
+        friend bool operator==(const Edge & x, const Edge & y)
         {
-            return a == b;
+            return (x.a == y.a) && (x.b == y.b);
         }
     };
 
@@ -456,24 +456,24 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
 
                 if (tr.p2.X <= tr.p3.X)
                 {
-                    e1.a = tr.p2;
-                    e1.b = tr.p3;
+                    e2.a = tr.p2;
+                    e2.b = tr.p3;
                 }
                 else
                 {
-                    e1.a = tr.p3;
-                    e1.b = tr.p2;
+                    e2.a = tr.p3;
+                    e2.b = tr.p2;
                 }
 
                 if (tr.p1.X <= tr.p3.X)
                 {
-                    e1.a = tr.p1;
-                    e1.b = tr.p3;
+                    e3.a = tr.p1;
+                    e3.b = tr.p3;
                 }
                 else
                 {
-                    e1.a = tr.p3;
-                    e1.b = tr.p1;
+                    e3.a = tr.p3;
+                    e3.b = tr.p1;
                 }
 
                 edge_buffer.push_back(e1);
@@ -493,10 +493,9 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
 
             }
 
-
         }
 
-        // delete all doubly specified edges from edge buffer
+        // delete all doubly specified edges from edge buffer -> leaves only edges for enclosing polygon!!!
         // this section of the code is probably very inefficient but idgaf
         // c++ is like... fast. so my code being shitty doesn't actually matter!! :3
 
@@ -518,13 +517,14 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
         };
 
         // erase-remove idiom here!!
-        auto logical_end =
+        auto logical_end = remove_if
         (
             edge_buffer.begin(),
             edge_buffer.end(),
             check_if_edge_doubly_specified
         );
         edge_buffer.erase(logical_end, edge_buffer.end());
+
 
         // print edge buffer if testing
         #ifdef TESTING
@@ -535,6 +535,8 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
                 << e.b.X << ", " << e.b.Y << ")" << endl;
             }
         #endif
+
+        // add to triangle list all triangles formed between the point and the edges of the enclosing polygon
     }
 
 
