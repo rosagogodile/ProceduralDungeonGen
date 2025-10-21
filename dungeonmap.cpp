@@ -537,6 +537,15 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
         #endif
 
         // add to triangle list all triangles formed between the point and the edges of the enclosing polygon
+        for (auto e : edge_buffer)
+        {
+            Triangle temp;
+            temp.p1 = e.a;
+            temp.p2 = e.b;
+            temp.p3 = vertex;
+
+            triangle_list.push_back(temp);
+        }
     }
 
 
@@ -559,4 +568,12 @@ void DungeonMap::generate(int32_t seed)
     generate_rooms();
 
     vector<Triangle> triangle_list = Bowyer_Watson();
+    #ifdef TESTING
+        for (auto tr : triangle_list)
+        {
+            cout << "(" << tr.p1.X << ", " << tr.p1.Y << "), (" 
+                 << tr.p2.X << ", " << tr.p2.Y << "), (" 
+                 << tr.p3.X << ", " << tr.p3.Y << ")" << endl;
+        }
+    #endif
 }
