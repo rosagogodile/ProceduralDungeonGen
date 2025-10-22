@@ -62,6 +62,102 @@ namespace sg
 
             }
 
+
+            // Destructor
+            // ensures `adjacency_matrix` is freed
+            ~SimpleGraph()
+            {
+                if (adjacency_matrix != nullptr)
+                    delete adjacency_matrix;
+            }
+
+            // GETTERS
+            std::vector<T> get_data_list()
+            {
+                return data_list;
+            }
+            size_t size()
+            {
+                // NOTE: `graph_size` is the side length of the matrix
+                return graph_size;
+            }
+            std::unordered_map<T, uint16_t> get_index_map()
+            {
+                return index_map;
+            }
+            // returns a copy of the adjacency matrix, to prevent any funny business
+            ByteMatrix2D get_adjacency_matrix()
+            {
+                ByteMatrix2D rtrnval(graph_size, graph_size);
+
+                // since the adjacency matrix is diagonally symmetric,
+                // the ordering of `i` and `j` shouldn't matter
+                for (uint16_t i = 0; i < graph_size; ++i)
+                {
+                    for (uint16_t j = 0; j < graph_size; ++j)
+                    {
+                        rtrnval.set(i, j, adjacency_matrix->get(i, j));
+                    }
+                }
+
+                return rtrnval;
+            }
+
+
+            // modifies a connection between two data points `a` and `b`
+            // `is_connected` should either be equal to `sg::NOT_CONNECTED` or `sg::CONNECTED`
+            void mod_connection(T a, T b, uint8_t is_connected)
+            {
+                uint16_t a_index, b_index;
+
+                a_index = index_map.at(a);
+                b_index = index_map.at(b);
+
+                // set both possible orderings to be their connection since
+                // the adjacency matrix must be diagonally symmetric
+                adjacency_matrix->set(a_index, b_index, is_connected);
+                adjacency_matrix->set(b_index, a_index, is_connected);
+            }
+
+
+            // returns whether or not `a` and `b` share a connection
+            uint8_t is_connected(T a, T b)
+            {
+                // since the adjacency matrix is diagonally symmetric,
+                // the ordering of `a` and `b` is arbitrary,
+                // so I opted for `a` going first and `b` going second
+                return adjacency_matrix->get(index_map.at(a), index_map.at(b));
+            }
+
+            
+            // get a map of all of the connections
+            std::unordered_map<T, std::vector<T>> get_connections()
+            {
+                std::unordered_map<T, std::vector<T>> rtrnval;
+
+                for (auto x : data_list)
+                {
+                    std::vector<T> connections;
+
+                    uint16_t x_index = index_map.at(x);
+                    for (uint16_t i = 0; i < graph_size; ++i)
+                    {
+                        // if a connection is found, put the connection in the list of connections
+                        const uint8_t IS_CONNECTED = adjacency_matrix->get(x_index, i);
+                        if (IS_CONNECTED == CONNECTED)
+                            connections.push_back(data_list.at(i));
+                    }
+
+                    // add connections to map of all connections
+                    rtrnval.insert({x, connections});
+                }
+
+
+                return rtrnval;
+            }
+
+
+
     };
 };
 

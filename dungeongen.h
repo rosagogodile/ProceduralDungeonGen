@@ -19,8 +19,10 @@
 #include <algorithm>
 #include <utility>
 #include <functional>
+#include <unordered_set>
 
 #include "bytematrix2d.h"
+#include "simplegraph.h"
 
 // ------
 
@@ -29,6 +31,10 @@
 // the amount of padding at the edge of the matrix after the rooms have been generated
 // needed in order to ensure that there is enough space for each of the hallways
 #define PADDING 5
+
+// define this if the program is being tested
+// if this is defined, extra info will be printed out from the functions defined in `dungeonmap.cpp`
+#define TESTING
 
 // ------
 
@@ -57,6 +63,7 @@ struct CoordinatePair
 
 /* Makes `CoordinatePair` hashable
  * https://www.delftstack.com/howto/cpp/hash-in-cpp/
+ * This feels really hacky??? But it works so I'm okay with it??????
  */
 namespace std
 {

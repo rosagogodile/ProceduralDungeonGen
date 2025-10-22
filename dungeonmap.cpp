@@ -5,9 +5,6 @@
 
 #include "dungeongen.h"
 
-// define this if the program is testing
-#define TESTING
-
 // only include `iostream` if testing
 // otherwise, `iostream` isn't needed
 #ifdef TESTING
@@ -211,7 +208,12 @@ void DungeonMap::generate_rooms()
     // maximum shift size
     // 3 seems to be the magic number here, any higher and the dungeon isn't garunteed to generate.
     // any lower and the dungeon feels too spread out
-    const uint16_t MAX_SHIFT = (max_room_side_len * total_num_rooms) / 3;
+    // BUGFIX 10/22/2025:
+    // 3 works only if the total number of rooms is greater than or equal to the maximum side length of the room
+    // otherwise, we divide by 2 instead
+    const uint16_t MAX_SHIFT = (total_num_rooms >= max_room_side_len) ? 
+        max_room_side_len * total_num_rooms / 3 :
+        max_room_side_len * total_num_rooms / 2;
 
     // lambda that checks if the box overlaps with any box in a vector of boxes
     auto box_overlaps = [](vector<RoomPairs> a, RoomPairs b)
@@ -617,5 +619,44 @@ void DungeonMap::generate(int32_t seed)
         }
     #endif
 
-    // convert list of triangles into a graph
+    // CONVERT LIST OF TRIANGLES INTO A GRAPH
+    // get set of vertices
+    unordered_set<CoordinatePair> set_of_vertices;
+    for (auto tr : triangle_list)
+    {
+        set_of_vertices.insert(tr.p1);
+        set_of_vertices.insert(tr.p2);
+        set_of_vertices.insert(tr.p3);
+    }
+
+    // convert set of vertices to a vector
+    // https://stackoverflow.com/questions/42519867/efficiently-moving-contents-of-stdunordered-set-to-stdvector
+    vector<CoordinatePair> vertex_list;
+    vertex_list.reserve(set_of_vertices.size());
+
+    for (auto it = set_of_vertices.begin(); it != set_of_vertices.end(); )
+    {
+        vertex_list.push_back(move(set_of_vertices.extract(it++).value())); // ew
+    }
+
+    #ifdef TESTING
+        cout << "VERTEX LIST: " << endl;
+        for (auto v : vertex_list)
+        {
+            cout << "(" << v.X << ", " << v.Y << ")" << endl;
+        }
+        cout << "THERE ARE " << to_string(vertex_list.size()) << " VERTICES." << endl; 
+    #endif
+
+    // the graph of all vertices, and their connections
+    // formed from the list of triangles
+    sg::SimpleGraph<CoordinatePair> super_graph(vertex_list);
+    // initialize connections
+    for (auto tr : triangle_list)
+    {
+        // connects each vertex of the triangle `tr`
+        super_graph.mod_connection(tr.p1, tr.p2, sg::CONNECTED);
+        super_graph.mod_connection(tr.p1, tr.p3, sg::CONNECTED);
+        super_graph.mod_connection(tr.p2, tr.p3, sg::CONNECTED);
+    }
 }
