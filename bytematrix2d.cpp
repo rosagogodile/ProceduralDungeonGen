@@ -3,7 +3,7 @@
  * Definitions for the methods of `ByteMatrix2D`
  */
 
-#include "dungeongen.h"
+#include "bytematrix2d.h"
 
 /* Constructor for the `ByteMatrix2D` class
  * dynamically allocates a 2D array based off of the parameters given

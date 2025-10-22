@@ -168,11 +168,12 @@ void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
  * https://vazgriz.com/119/procedurally-generated-dungeons/
  
  * Place rooms such that they don't overlap
- * Create Delaunay Triangulation Graph of Rooms(???)
+ * Create Delaunay Triangulation Graph of Rooms
  *      - Essentially, this is a triangular mesh that will have the center of each room as a vertex
  *      - I will use the Bowyer-Watson algorithm for this: https://paulbourke.net/papers/triangulate/
+ *      - Convert list of triangles into a graph!!!
  * Create a Minimum Spanning Tree from the triangulation
- *      - I will use Prim's algorithm for this
+ *      - I will use Prim's algorithm for this: https://www.w3schools.com/dsa/dsa_algo_mst_prim.php
  * Randomly add connections from the Triangulation Graph into the tree
  * Use A* algorithm to find shortest path between each connected room, and build hallways from this
  * Use the vector of room coordinates to place objects in each of the rooms 
@@ -348,6 +349,7 @@ void DungeonMap::generate_rooms()
 namespace
 {
     // struct that stores an edge (two points)
+    // only used within the bowyer-watson algorithm
     struct Edge
     {
         CoordinatePair a;
@@ -361,7 +363,7 @@ namespace
     };
 
     // constant used for floating point comparisons
-    constexpr double EPSILON = 1e-4;
+    const double EPSILON = 1e-4;
 };
 
 
@@ -600,8 +602,10 @@ void DungeonMap::generate(int32_t seed)
     // setup random number generator (including setting its seed)
     rng = mt19937(seed);
 
+    // generate empty rooms w/o hallways
     generate_rooms();
 
+    // get list of triangles, this will be converted into a graph
     vector<Triangle> triangle_list = Bowyer_Watson();
     #ifdef TESTING
         cout << "TRIANGLE LIST: " << endl;
@@ -612,4 +616,6 @@ void DungeonMap::generate(int32_t seed)
                  << tr.p3.X << ", " << tr.p3.Y << ")" << endl;
         }
     #endif
+
+    // convert list of triangles into a graph
 }

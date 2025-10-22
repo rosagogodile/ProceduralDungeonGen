@@ -12,13 +12,15 @@
 #include <cstdint>
 // strings! 
 #include <string>
-#include <stdexcept>
 #include <random>
 #include <vector>
 // mainly used for calculating the circumcircle of a triangle
 #include <cmath>
 #include <algorithm>
 #include <utility>
+#include <functional>
+
+#include "bytematrix2d.h"
 
 // ------
 
@@ -30,38 +32,7 @@
 
 // ------
 
-/* Class that stores a matrix of unsigned 8-bit integers
- * Can be an arbitrary size
- */
-class ByteMatrix2D
-{
-    protected:
-        // stores the width and height of the matrix
-        uint16_t width;
-        uint16_t height;
 
-        // dynamically allocated matrix
-        uint8_t * matrix = nullptr;
-
-    public:
-        // constructor
-        ByteMatrix2D(uint16_t w, uint16_t h);
-        // default constructor :sob:
-        ByteMatrix2D();
-        // destructor
-        ~ByteMatrix2D();
-
-        // get value at specified coordinates
-        uint8_t get(uint16_t x, uint16_t y);
-        // set value at specified coordinates
-        void set(uint16_t x, uint16_t y, uint8_t val);
-        // converts matrix to a string, useful for printing 
-        std::string as_str(std::string seperator = "");
-
-        // getters
-        uint16_t get_width();
-        uint16_t get_height();
-};
 
 // namespace that stores all tiles and their corresponding IDs
 namespace TILES
@@ -74,7 +45,7 @@ namespace TILES
 };
 
 /* Struct that stores a single x, y coordinate pair
- */
+*/
 struct CoordinatePair
 {
     int32_t X;
@@ -84,9 +55,27 @@ struct CoordinatePair
     friend bool operator!=(const CoordinatePair & a, const CoordinatePair & b);
 };
 
-/* Struct that stores the coorindates for a room
- * The 4 coordinates essentially form a bounding box
+/* Makes `CoordinatePair` hashable
+ * https://www.delftstack.com/howto/cpp/hash-in-cpp/
  */
+namespace std
+{
+    template <>
+    struct hash<CoordinatePair>
+    {
+        size_t operator()(const CoordinatePair & cp) const
+        {
+            // https://stackoverflow.com/questions/23933227/what-is-a-fast-hash-function-for-pairs-of-ints
+            // note that `INT_MAX + 1` == `INT_MIN`
+            return (hash<int>()(cp.X) * (INT_MIN)) + hash<int>()(cp.Y);
+        }
+    };
+
+};
+
+/* Struct that stores the coorindates for a room
+* The 4 coordinates essentially form a bounding box
+*/
 struct RoomPairs
 {
     CoordinatePair top_left;
@@ -100,8 +89,8 @@ bool check_overlap(RoomPairs a, RoomPairs b);
 RoomPairs shift(RoomPairs a, CoordinatePair b);
 
 /* Struct that stores a triangle using three `CoordinatePair` structs
- * Will be used to create the triangulation
- */
+* Will be used to create the triangulation
+*/
 struct Triangle
 {
     CoordinatePair p1;
@@ -111,10 +100,9 @@ struct Triangle
     friend bool operator==(const Triangle & a, const Triangle & b);
 };
 
-
 /* Class that stores the dungeon map
- * Stores a dynamically allocated 2d array, defined in ByteMatrix2D
- */
+* Stores a dynamically allocated 2d array, defined in ByteMatrix2D
+*/
 class DungeonMap
 {
     private:
