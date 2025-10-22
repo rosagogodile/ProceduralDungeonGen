@@ -130,6 +130,24 @@ namespace sg
             }
 
             
+            // get a vector of connections for just a single data point
+            std::vector<T> get_connections_for(T data)
+            {
+                std::vector<T> connections;
+
+                uint16_t index = index_map.at(data);
+                for (uint16_t i = 0; i < graph_size; ++i)
+                {
+                    // if a connection is found, put it in the list of connections
+                    const uint8_t IS_CONNECTED = adjacency_matrix->get(index, i);
+                    if (IS_CONNECTED == CONNECTED)
+                        connections.push_back(data_list.at(i));
+                }
+
+                return connections;
+            }
+
+
             // get a map of all of the connections
             std::unordered_map<T, std::vector<T>> get_connections()
             {

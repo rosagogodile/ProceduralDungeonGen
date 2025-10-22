@@ -601,6 +601,8 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
  */
 sg::SimpleGraph<CoordinatePair> Prim(const sg::SimpleGraph<CoordinatePair> & full_graph)
 {
+    // https://www.w3schools.com/dsa/dsa_algo_mst_prim.php
+    
     using namespace std;
     using namespace sg;
 
