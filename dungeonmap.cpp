@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/20/2025
+ * 10/22/2025
  * Definitions for the methods of `DungeonMap`
  */
 
@@ -66,12 +66,18 @@ RoomPairs shift(RoomPairs a, CoordinatePair b)
 
 
 /* Operator overloads
- * Overloads == for two of the structs declared in dungeongen.h
+ * Overloads == for `CoordinatePair` and `Triangle`
+ * Overloads != for `CoordinatePair`
  */
 
 bool operator==(const CoordinatePair & a, const CoordinatePair & b)
 {
     return (a.X == b.X) && (a.Y == b.Y);
+}
+
+bool operator!=(const CoordinatePair & a, const CoordinatePair & b)
+{
+    return !(a == b);
 }
 
 bool operator==(const Triangle & a, const Triangle & b)
@@ -175,8 +181,6 @@ void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 
 
 
-
-
 /* Private Function
  * PART 1
  * Place rooms so they don't overlap
@@ -277,6 +281,17 @@ void DungeonMap::generate_rooms()
             matr_sz.Y = rp.bottom_right.Y;
     }
 
+    // add padding to the matrix, for when hallways need to be generated
+    matr_sz.X += 2 * PADDING;
+    matr_sz.Y += 2 * PADDING;
+
+    CoordinatePair pad_shifter = {PADDING, PADDING};
+
+    for (auto & rp : room_coords)
+    {
+        rp = shift(rp, pad_shifter);
+    }
+
     #ifdef TESTING
         cout << "Matrix size: " << to_string(matr_sz.X) << " * " << to_string(matr_sz.Y) << endl << endl;
     #endif
@@ -307,6 +322,7 @@ void DungeonMap::generate_rooms()
     }
 
     // place rooms in matrix
+    // triple nested for loop makes me want to kill myself lowkey highkey
     for (auto rp : room_coords)
     {
         x_coord = rp.top_left.X;
@@ -495,6 +511,10 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
 
         }
 
+        // update original triangle list from the temporary list
+        triangle_list.clear();
+        triangle_list = move(temp_triangle_list);
+
         // delete all doubly specified edges from edge buffer -> leaves only edges for enclosing polygon!!!
         // this section of the code is probably very inefficient but idgaf
         // c++ is like... fast. so my code being shitty doesn't actually matter!! :3
@@ -548,9 +568,24 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
         }
     }
 
+    // remove triangles that use supertriangle vertices
+    vector<Triangle> finished_triangle_list;
+
+    for (auto tr : triangle_list)
+    {
+        // only add triangle to the triangle list if it doesn't contain any of the 
+        // vertices for the super triangle
+        if (tr.p1 != super_triangle.p1 && tr.p1 != super_triangle.p2 && tr.p1 != super_triangle.p3 &&
+            tr.p2 != super_triangle.p1 && tr.p2 != super_triangle.p2 && tr.p2 != super_triangle.p3 &&
+            tr.p3 != super_triangle.p1 && tr.p3 != super_triangle.p2 && tr.p3 != super_triangle.p3)
+        {
+            finished_triangle_list.push_back(tr);
+        }
+    }
+
 
     // return final list of triangles
-    return triangle_list;
+    return finished_triangle_list;
 }
 
 
@@ -569,6 +604,7 @@ void DungeonMap::generate(int32_t seed)
 
     vector<Triangle> triangle_list = Bowyer_Watson();
     #ifdef TESTING
+        cout << "TRIANGLE LIST: " << endl;
         for (auto tr : triangle_list)
         {
             cout << "(" << tr.p1.X << ", " << tr.p1.Y << "), (" 

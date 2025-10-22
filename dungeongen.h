@@ -1,10 +1,12 @@
 /* Rosa Knowles
- * 10/20/2025
+ * 10/22/2025
  * Header file for classes, functions, and constants that are used for generating dungeon maps
  */
 
 #ifndef DUNGEONGEN_H
 #define DUNGEONGEN_H
+
+// INCLUDES
 
 // used for fixed width integer types
 #include <cstdint>
@@ -17,6 +19,16 @@
 #include <cmath>
 #include <algorithm>
 #include <utility>
+
+// ------
+
+// DEFINES
+
+// the amount of padding at the edge of the matrix after the rooms have been generated
+// needed in order to ensure that there is enough space for each of the hallways
+#define PADDING 5
+
+// ------
 
 /* Class that stores a matrix of unsigned 8-bit integers
  * Can be an arbitrary size
@@ -69,6 +81,7 @@ struct CoordinatePair
     int32_t Y;
 
     friend bool operator==(const CoordinatePair & a, const CoordinatePair & b);
+    friend bool operator!=(const CoordinatePair & a, const CoordinatePair & b);
 };
 
 /* Struct that stores the coorindates for a room
