@@ -10,6 +10,7 @@
 
 // used for fixed width integer types
 #include <cstdint>
+#include <climits> // needed for linux i think?
 // strings! 
 #include <string>
 #include <random>
@@ -20,6 +21,7 @@
 #include <utility>
 #include <functional>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "bytematrix2d.h"
 #include "simplegraph.h"
@@ -126,6 +128,7 @@ class DungeonMap
         void place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
         void generate_rooms();
         std::vector<Triangle> Bowyer_Watson();
+        sg::SimpleGraph<CoordinatePair> Prim(const sg::SimpleGraph<CoordinatePair> & full_graph);
 
     public: 
         // constructor

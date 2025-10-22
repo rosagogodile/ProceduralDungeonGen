@@ -593,6 +593,37 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
 }
 
 
+
+/* Private Function
+ * PART 3
+ * Prim's algorithm to create Minimum Spanning Tree
+ * Returns an `sg::SimpleGraph<CoordinatePair>`
+ */
+sg::SimpleGraph<CoordinatePair> Prim(const sg::SimpleGraph<CoordinatePair> & full_graph)
+{
+    using namespace std;
+    using namespace sg;
+
+    // vector of all coordinate pairs in the graph
+    vector<CoordinatePair> vertex_list = full_graph.get_data_list();
+
+    // minimum spanning tree
+    // data points initialized from the elements in `full_graph`
+    SimpleGraph<CoordinatePair> mst(vertex_list);
+
+    // set of all vertices contained in the minimum spanning tree
+    unordered_set<CoordinatePair> in_mst;
+    
+    // prim's algorithm works regardless of what the starting vertex is, so we just grab the first vertex from the vertex list
+    CoordinatePair starting_vertex = vertex_list.at(0);
+    in_mst.insert(starting_vertex);
+    
+}
+
+
+
+
+
 /* Generate the dungeon map
  * Will place tiles based off their corresponding ids in the `TILES` namespace
  * `seed` is a 32-bit integer that defines the random seed for this map generation
@@ -659,4 +690,22 @@ void DungeonMap::generate(int32_t seed)
         super_graph.mod_connection(tr.p1, tr.p3, sg::CONNECTED);
         super_graph.mod_connection(tr.p2, tr.p3, sg::CONNECTED);
     }
+
+    // print graph connections if testing
+    #ifdef TESTING
+        // get a hashmap of the connections
+        unordered_map<CoordinatePair, vector<CoordinatePair>> connections = super_graph.get_connections();
+
+        cout << "CONNECTIONS: " << endl;
+        for (const auto [key, value] : connections)
+        {
+            cout << "(" << key.X << ", " << key.Y << "): ";
+
+            for (auto cp : value)
+            {
+                cout << "(" << cp.X << ", " << cp.Y << ") ";
+            }
+            cout << endl;
+        }
+    #endif
 }
