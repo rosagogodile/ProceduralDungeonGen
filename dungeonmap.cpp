@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/22/2025
+ * 10/24/2025
  * Definitions for the methods of `DungeonMap`
  */
 
@@ -602,23 +602,83 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
 sg::SimpleGraph<CoordinatePair> Prim(const sg::SimpleGraph<CoordinatePair> & full_graph)
 {
     // https://www.w3schools.com/dsa/dsa_algo_mst_prim.php
-    
+    // https://en.wikipedia.org/wiki/Prim%27s_algorithm
+
     using namespace std;
     using namespace sg;
 
-    // vector of all coordinate pairs in the graph
+    // vector of all coordinate pairs in the graph (vertex list)
     vector<CoordinatePair> vertex_list = full_graph.get_data_list();
+    // hashmap of all coordinate pairs in the graph and their connections
+    unordered_map<CoordinatePair, vector<CoordinatePair>> connections = full_graph.get_connections();
+
+
+    unordered_map<CoordinatePair, double>           cheapest_cost;
+    unordered_map<CoordinatePair, CoordinatePair>   cheapest_edge;
+
+    for (auto vertex : vertex_list)
+    {
+        // set the cheapest cost for each vertex to infinity
+        cheapest_cost.insert({vertex, DOUBLE_INF});
+    }
 
     // minimum spanning tree
     // data points initialized from the elements in `full_graph`
     SimpleGraph<CoordinatePair> mst(vertex_list);
 
     // set of all vertices contained in the minimum spanning tree
-    unordered_set<CoordinatePair> in_mst;
+    unordered_set<CoordinatePair> explored;
+    // set of all vertices not contained in the minimum spanning tree
+    // initialized using every element in the vertex list
+    unordered_set<CoordinatePair> unexplored(vertex_list.begin(), vertex_list.end());
     
     // prim's algorithm works regardless of what the starting vertex is, so we just grab the first vertex from the vertex list
     CoordinatePair starting_vertex = vertex_list.at(0);
-    in_mst.insert(starting_vertex);
+    cheapest_cost[starting_vertex] = 0.0;
+
+    while (unexplored.size() != 0)
+    {
+        // choose the unexplored vertex with the cheapest cost
+        // using a tuple to store the pairing between the cheapest cost and its assoc. vertex
+        // the syntax for tuples in this god-forsaken language is kinda gross but idgaf :P
+        tuple<CoordinatePair, double> cheapest_vertex_pair(starting_vertex, DOUBLE_INF);
+
+        for (const auto & [key, value] : cheapest_cost)
+        {
+            if (value < get<1>(cheapest_vertex_pair))
+            {
+                get<0>(cheapest_vertex_pair) = key;
+                get<1>(cheapest_vertex_pair) = value;
+            }
+        }
+
+        // reference to the vertex in the above pairing
+        CoordinatePair & cheapest_vertex = get<0>(cheapest_vertex_pair);
+
+        explored.insert(cheapest_vertex);
+        unexplored.erase(unexplored.find(cheapest_vertex));
+
+        for (auto vertex : connections.at(cheapest_vertex))
+        {
+            // calculate weight
+            // uses the distance formula for the points `cheapest_vertex` and `vertex`
+            const double WEIGHT = 
+                sqrt(pow(cheapest_vertex.X - vertex.X, 2.0) + pow(cheapest_vertex.Y - vertex.Y, 2.0));
+
+            // stores whether or not `vertex` is unexplored
+            const bool VERTEX_UNEXPLORED =
+                unexplored.find(vertex) != unexplored.end();
+
+            if (VERTEX_UNEXPLORED && WEIGHT < cheapest_cost.at(vertex))
+            {
+                cheapest_cost[vertex] = WEIGHT;
+                cheapest_edge.insert({cheapest_vertex, vertex});
+            }
+
+        }
+
+
+    }
     
 }
 

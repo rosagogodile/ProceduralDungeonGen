@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/22/2025
+ * 10/24/2025
  * Header file for a simple implementation of a graph
  * Uses an adjacency matrix
  * https://www.w3schools.com/dsa/dsa_data_graphs_implementation.php
@@ -155,16 +155,16 @@ namespace sg
 
                 for (auto x : data_list)
                 {
-                    std::vector<T> connections;
+                    std::vector<T> connections = get_connections_for(x);
 
-                    uint16_t x_index = index_map.at(x);
-                    for (uint16_t i = 0; i < graph_size; ++i)
-                    {
-                        // if a connection is found, put the connection in the list of connections
-                        const uint8_t IS_CONNECTED = adjacency_matrix->get(x_index, i);
-                        if (IS_CONNECTED == CONNECTED)
-                            connections.push_back(data_list.at(i));
-                    }
+                    // uint16_t x_index = index_map.at(x);
+                    // for (uint16_t i = 0; i < graph_size; ++i)
+                    // {
+                    //     // if a connection is found, put the connection in the list of connections
+                    //     const uint8_t IS_CONNECTED = adjacency_matrix->get(x_index, i);
+                    //     if (IS_CONNECTED == CONNECTED)
+                    //         connections.push_back(data_list.at(i));
+                    // }
 
                     // add connections to map of all connections
                     rtrnval.insert({x, connections});

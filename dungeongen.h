@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/22/2025
+ * 10/24/2025
  * Header file for classes, functions, and constants that are used for generating dungeon maps
  */
 
@@ -11,6 +11,7 @@
 // used for fixed width integer types
 #include <cstdint>
 #include <climits> // needed for linux i think?
+#include <limits>
 // strings! 
 #include <string>
 #include <random>
@@ -22,6 +23,7 @@
 #include <functional>
 #include <unordered_set>
 #include <unordered_map>
+#include <tuple>
 
 #include "bytematrix2d.h"
 #include "simplegraph.h"
@@ -33,6 +35,10 @@
 // the amount of padding at the edge of the matrix after the rooms have been generated
 // needed in order to ensure that there is enough space for each of the hallways
 #define PADDING 5
+
+// infinity for doubles
+// from `<limits>`
+#define DOUBLE_INF std::numeric_limits<double>::infinity()
 
 // define this if the program is being tested
 // if this is defined, extra info will be printed out from the functions defined in `dungeonmap.cpp`
