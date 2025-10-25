@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/24/2025
+ * 10/25/2025
  * Header file for a simple implementation of a graph
  * Uses an adjacency matrix
  * https://www.w3schools.com/dsa/dsa_data_graphs_implementation.php
@@ -14,6 +14,9 @@
 
 #include "bytematrix2d.h"
 
+
+// NOTE:
+// declaring my functions as `const` allows me to use the for a constant reference to a `SimpleGraph` object
 
 
 namespace sg
@@ -72,21 +75,21 @@ namespace sg
             }
 
             // GETTERS
-            std::vector<T> get_data_list()
+            std::vector<T> get_data_list() const
             {
                 return data_list;
             }
-            size_t size()
+            size_t size() const
             {
                 // NOTE: `graph_size` is the side length of the matrix
                 return graph_size;
             }
-            std::unordered_map<T, uint16_t> get_index_map()
+            std::unordered_map<T, uint16_t> get_index_map() const
             {
                 return index_map;
             }
             // returns a copy of the adjacency matrix, to prevent any funny business
-            ByteMatrix2D get_adjacency_matrix()
+            ByteMatrix2D get_adjacency_matrix() const
             {
                 ByteMatrix2D rtrnval(graph_size, graph_size);
 
@@ -121,7 +124,7 @@ namespace sg
 
 
             // returns whether or not `a` and `b` share a connection
-            uint8_t is_connected(T a, T b)
+            uint8_t is_connected(T a, T b) const
             {
                 // since the adjacency matrix is diagonally symmetric,
                 // the ordering of `a` and `b` is arbitrary,
@@ -131,7 +134,7 @@ namespace sg
 
             
             // get a vector of connections for just a single data point
-            std::vector<T> get_connections_for(T data)
+            std::vector<T> get_connections_for(T data) const
             {
                 std::vector<T> connections;
 
@@ -149,7 +152,7 @@ namespace sg
 
 
             // get a map of all of the connections
-            std::unordered_map<T, std::vector<T>> get_connections()
+            std::unordered_map<T, std::vector<T>> get_connections() const
             {
                 std::unordered_map<T, std::vector<T>> rtrnval;
 

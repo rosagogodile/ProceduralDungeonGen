@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/24/2025
+ * 10/25/2025
  * Definitions for the methods of `DungeonMap`
  */
 
@@ -599,13 +599,17 @@ std::vector<Triangle> DungeonMap::Bowyer_Watson()
  * Prim's algorithm to create Minimum Spanning Tree
  * Returns an `sg::SimpleGraph<CoordinatePair>`
  */
-sg::SimpleGraph<CoordinatePair> Prim(const sg::SimpleGraph<CoordinatePair> & full_graph)
+sg::SimpleGraph<CoordinatePair> DungeonMap::Prim(const sg::SimpleGraph<CoordinatePair> & full_graph)
 {
     // https://www.w3schools.com/dsa/dsa_algo_mst_prim.php
     // https://en.wikipedia.org/wiki/Prim%27s_algorithm
 
     using namespace std;
     using namespace sg;
+
+    // vertex that we can treat as a null value since it will, in practice, never be used in a practical situation
+    const CoordinatePair VERTEX_NULL = {INT32_MIN, INT32_MIN};
+
 
     // vector of all coordinate pairs in the graph (vertex list)
     vector<CoordinatePair> vertex_list = full_graph.get_data_list();
@@ -620,6 +624,7 @@ sg::SimpleGraph<CoordinatePair> Prim(const sg::SimpleGraph<CoordinatePair> & ful
     {
         // set the cheapest cost for each vertex to infinity
         cheapest_cost.insert({vertex, DOUBLE_INF});
+        cheapest_edge.insert({vertex, VERTEX_NULL});
     }
 
     // minimum spanning tree
@@ -636,29 +641,54 @@ sg::SimpleGraph<CoordinatePair> Prim(const sg::SimpleGraph<CoordinatePair> & ful
     CoordinatePair starting_vertex = vertex_list.at(0);
     cheapest_cost[starting_vertex] = 0.0;
 
+    // mark that this printed section is for prim's algorithm if testing
+    // and print out `cheapest_cost`
+    #ifdef TESTING
+        cout << "PRIM's ALG" << endl;
+
+        for (const auto & [key, value] : cheapest_cost)
+        {
+            cout << "(" << key.X << ", " << key.Y << ") " << value << endl; 
+        }
+
+        cout << "~~~~" << endl;
+    #endif
+
     while (unexplored.size() != 0)
     {
         // choose the unexplored vertex with the cheapest cost
         // using a tuple to store the pairing between the cheapest cost and its assoc. vertex
         // the syntax for tuples in this god-forsaken language is kinda gross but idgaf :P
-        tuple<CoordinatePair, double> cheapest_vertex_pair(starting_vertex, DOUBLE_INF);
+        // tuple<CoordinatePair, double> cheapest_vertex_pair(starting_vertex, DOUBLE_INF);
+
+        // nvm im not gonna use tuples lol
+        CoordinatePair cheapest_vertex;
+        double         cheapest_value;
 
         for (const auto & [key, value] : cheapest_cost)
         {
-            if (value < get<1>(cheapest_vertex_pair))
+            if (value < cheapest_value)
             {
-                get<0>(cheapest_vertex_pair) = key;
-                get<1>(cheapest_vertex_pair) = value;
+                cheapest_vertex = key;
+                cheapest_value = value;
             }
         }
 
         // reference to the vertex in the above pairing
-        CoordinatePair & cheapest_vertex = get<0>(cheapest_vertex_pair);
+        // CoordinatePair & cheapest_vertex = get<0>(cheapest_vertex_pair);
 
         explored.insert(cheapest_vertex);
-        unexplored.erase(unexplored.find(cheapest_vertex));
 
-        for (auto vertex : connections.at(cheapest_vertex))
+        // print `unexplored` if testing
+        #ifdef TESTING
+            for (auto vertex : unexplored)
+            {
+                cout << "(" << vertex.X << ", " << vertex.Y << "), ";
+            }
+            cout << endl;
+        #endif
+
+        for (const auto & vertex : connections.at(cheapest_vertex))
         {
             // calculate weight
             // uses the distance formula for the points `cheapest_vertex` and `vertex`
@@ -677,9 +707,33 @@ sg::SimpleGraph<CoordinatePair> Prim(const sg::SimpleGraph<CoordinatePair> & ful
 
         }
 
+        // erases the unexplored vertex if it is in the set
+        auto position = find_if
+        (
+            begin(unexplored),
+            end(unexplored),
+            [&cheapest_vertex](const CoordinatePair & cp)
+            {
+                return cp == cheapest_vertex;
+            }
+        );
+        if (position != end(unexplored))
+            unexplored.erase(position);
+
 
     }
-    
+
+
+    for (const auto & vertex : vertex_list)
+    {
+        if (cheapest_edge.at(vertex) != VERTEX_NULL)
+        {
+            mst.mod_connection(vertex, cheapest_edge.at(vertex), sg::CONNECTED);
+        }
+    }
+
+    // return minimum spanning tree
+    return mst;    
 }
 
 
@@ -756,10 +810,30 @@ void DungeonMap::generate(int32_t seed)
     // print graph connections if testing
     #ifdef TESTING
         // get a hashmap of the connections
-        unordered_map<CoordinatePair, vector<CoordinatePair>> connections = super_graph.get_connections();
+        unordered_map<CoordinatePair, vector<CoordinatePair>> connections_a = super_graph.get_connections();
 
         cout << "CONNECTIONS: " << endl;
-        for (const auto [key, value] : connections)
+        for (const auto [key, value] : connections_a)
+        {
+            cout << "(" << key.X << ", " << key.Y << "): ";
+
+            for (auto cp : value)
+            {
+                cout << "(" << cp.X << ", " << cp.Y << ") ";
+            }
+            cout << endl;
+        }
+    #endif
+
+    sg::SimpleGraph<CoordinatePair> minimum_spanning_tree = Prim(super_graph);
+
+    // print minimum spanning tree connections if testing
+    #ifdef TESTING
+        // get a hashmap of the connections
+        unordered_map<CoordinatePair, vector<CoordinatePair>> connections_b = minimum_spanning_tree.get_connections();
+
+        cout << "CONNECTIONS: " << endl;
+        for (const auto [key, value] : connections_b)
         {
             cout << "(" << key.X << ", " << key.Y << "): ";
 
