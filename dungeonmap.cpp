@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/25/2025
+ * 10/27/2025
  * Definitions for the methods of `DungeonMap`
  */
 
@@ -10,6 +10,15 @@
 #ifdef TESTING
     #include <iostream>
 #endif
+
+
+// Takes in two `CoordinatePair` structs
+// Returns the distance between the two points as a double
+double dist(CoordinatePair x1, CoordinatePair x2)
+{
+    return sqrt(pow(x1.X - x2.X, 2.0) + pow(x1.Y - x2.Y, 2.0));
+}
+
 
 /* checks if two `RoomPairs` (a, b) are overlapping
  */
@@ -616,121 +625,58 @@ sg::SimpleGraph<CoordinatePair> DungeonMap::Prim(const sg::SimpleGraph<Coordinat
     // hashmap of all coordinate pairs in the graph and their connections
     unordered_map<CoordinatePair, vector<CoordinatePair>> connections = full_graph.get_connections();
 
-
-    unordered_map<CoordinatePair, double>           cheapest_cost;
-    unordered_map<CoordinatePair, CoordinatePair>   cheapest_edge;
-
-    for (auto vertex : vertex_list)
-    {
-        // set the cheapest cost for each vertex to infinity
-        cheapest_cost.insert({vertex, DOUBLE_INF});
-        cheapest_edge.insert({vertex, VERTEX_NULL});
-    }
-
     // minimum spanning tree
     // data points initialized from the elements in `full_graph`
     SimpleGraph<CoordinatePair> mst(vertex_list);
-
-    // set of all vertices contained in the minimum spanning tree
-    unordered_set<CoordinatePair> explored;
-    // set of all vertices not contained in the minimum spanning tree
-    // initialized using every element in the vertex list
-    unordered_set<CoordinatePair> unexplored(vertex_list.begin(), vertex_list.end());
     
-    // prim's algorithm works regardless of what the starting vertex is, so we just grab the first vertex from the vertex list
+    unordered_set<CoordinatePair> explored_vertices;
+    // initialize set of unexplored vertices using the vertex list
+    unordered_set<CoordinatePair> unexplored_vertices(vertex_list.begin(), vertex_list.end());
+
+    // get starting vertex
+    // this is arbitrary, so we will just pick the first element in the vertex list
     CoordinatePair starting_vertex = vertex_list.at(0);
-    cheapest_cost[starting_vertex] = 0.0;
+    unexplored_vertices.erase(starting_vertex);
+    explored_vertices.insert(starting_vertex);
 
-    // mark that this printed section is for prim's algorithm if testing
-    // and print out `cheapest_cost`
-    #ifdef TESTING
-        cout << "PRIM's ALG" << endl;
-
-        for (const auto & [key, value] : cheapest_cost)
-        {
-            cout << "(" << key.X << ", " << key.Y << ") " << value << endl; 
-        }
-
-        cout << "~~~~" << endl;
-    #endif
-
-    while (unexplored.size() != 0)
+    while (unexplored_vertices.size() > 0)
     {
-        // choose the unexplored vertex with the cheapest cost
-        // using a tuple to store the pairing between the cheapest cost and its assoc. vertex
-        // the syntax for tuples in this god-forsaken language is kinda gross but idgaf :P
-        // tuple<CoordinatePair, double> cheapest_vertex_pair(starting_vertex, DOUBLE_INF);
+        // find the connection with the minimum weight 
+        Edge minimum_connection;
+        double minimum_weight = DOUBLE_INF;
 
-        // nvm im not gonna use tuples lol
-        CoordinatePair cheapest_vertex;
-        double         cheapest_value;
-
-        for (const auto & [key, value] : cheapest_cost)
+        for (const auto & vertex : explored_vertices)
         {
-            if (value < cheapest_value)
+            // iterate through each of the points that connect to `vertex`
+            for (const auto & cp : connections.at(vertex))
             {
-                cheapest_vertex = key;
-                cheapest_value = value;
-            }
-        }
+                // only consider a connection if `cp` has not been explored
+                if (unexplored_vertices.find(cp) != unexplored_vertices.end())
+                {
+                    // calculate the distance between `vertex` and `cp`
+                    // this will be our weight
+                    double temp_weight = dist(vertex, cp);
 
-        // reference to the vertex in the above pairing
-        // CoordinatePair & cheapest_vertex = get<0>(cheapest_vertex_pair);
-
-        explored.insert(cheapest_vertex);
-
-        // print `unexplored` if testing
-        #ifdef TESTING
-            for (auto vertex : unexplored)
-            {
-                cout << "(" << vertex.X << ", " << vertex.Y << "), ";
-            }
-            cout << endl;
-        #endif
-
-        for (const auto & vertex : connections.at(cheapest_vertex))
-        {
-            // calculate weight
-            // uses the distance formula for the points `cheapest_vertex` and `vertex`
-            const double WEIGHT = 
-                sqrt(pow(cheapest_vertex.X - vertex.X, 2.0) + pow(cheapest_vertex.Y - vertex.Y, 2.0));
-
-            // stores whether or not `vertex` is unexplored
-            const bool VERTEX_UNEXPLORED =
-                unexplored.find(vertex) != unexplored.end();
-
-            if (VERTEX_UNEXPLORED && WEIGHT < cheapest_cost.at(vertex))
-            {
-                cheapest_cost[vertex] = WEIGHT;
-                cheapest_edge.insert({cheapest_vertex, vertex});
+                    // if a new minimum weight has been found, save it!
+                    if (temp_weight < minimum_weight)
+                    {
+                        minimum_weight = temp_weight;
+                        minimum_connection.a = vertex;
+                        minimum_connection.b = cp;
+                    }
+                }
             }
 
         }
 
-        // erases the unexplored vertex if it is in the set
-        auto position = find_if
-        (
-            begin(unexplored),
-            end(unexplored),
-            [&cheapest_vertex](const CoordinatePair & cp)
-            {
-                return cp == cheapest_vertex;
-            }
-        );
-        if (position != end(unexplored))
-            unexplored.erase(position);
+        // move the unexplored point in the new connection from
+        // the set of unexplored vertices to the set of explored vertices
+        unexplored_vertices.erase(minimum_connection.b);
+        explored_vertices.insert(minimum_connection.b);
 
-
+        mst.mod_connection(minimum_connection.a, minimum_connection.b, CONNECTED);
     }
 
-
-    for (const auto & vertex : vertex_list)
-    {
-        if (cheapest_edge.at(vertex) != VERTEX_NULL)
-        {
-            mst.mod_connection(vertex, cheapest_edge.at(vertex), sg::CONNECTED);
-        }
-    }
 
     // return minimum spanning tree
     return mst;    

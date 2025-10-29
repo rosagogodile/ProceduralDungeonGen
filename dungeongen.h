@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/25/2025
+ * 10/27/2025
  * Header file for classes, functions, and constants that are used for generating dungeon maps
  */
 
@@ -87,6 +87,8 @@ namespace std
     };
 
 };
+
+double dist(CoordinatePair x1, CoordinatePair x2);
 
 /* Struct that stores the coorindates for a room
 * The 4 coordinates essentially form a bounding box
