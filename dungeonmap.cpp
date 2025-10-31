@@ -771,6 +771,7 @@ void DungeonMap::generate(int32_t seed)
         }
     #endif
 
+    // create minimum spanning tree using prim's algorithm
     sg::SimpleGraph<CoordinatePair> minimum_spanning_tree = Prim(super_graph);
 
     // print minimum spanning tree connections if testing
@@ -791,11 +792,53 @@ void DungeonMap::generate(int32_t seed)
         }
     #endif
 
+    // create a graph that contains all connections in the minimum spanning tree
+    // and contains a small proportion of the connections not found in the minimum spanning tree, but found in the delaunay triangulation graph
+    sg::SimpleGraph<CoordinatePair> partial_graph(vertex_list);
+    // NOTE: "dtg" stands for delaunay triangulation graph
+    unordered_map<CoordinatePair, vector<CoordinatePair>> dtg_connections = super_graph.get_connections();
+    unordered_map<CoordinatePair, vector<CoordinatePair>> mst_connections = minimum_spanning_tree.get_connections();
+
+    // initialize random generation for probabilites
+    uniform_real_distribution<double> urd_prob(0,1);
+
+    // add all connections 
+    for (const auto & vertex : vertex_list)
+    {
+        // get lists of connections
+        vector<CoordinatePair> vertex_all_connections = dtg_connections.at(vertex);
+        vector<CoordinatePair> vertex_mst_connections = mst_connections.at(vertex);
+
+        for (const auto & c : vertex_all_connections)
+        {
+            // add connection to the partial graph if it is found in the minimum spanning tree
+            if (find(vertex_mst_connections.begin(), vertex_mst_connections.end(), c) != vertex_mst_connections.end())
+            {
+                partial_graph.mod_connection(vertex, c, sg::CONNECTED);
+            }
+            else
+            {
+                // randomly generate a value between 0 and 1 
+                // pass in the random number generator defined in this class
+                double determiner = urd_prob(rng);
+
+                // if `determiner` is less than `INCLUSION_PROB`, add the connection to the partial graph
+                if ((determiner - INCLUSION_PROB) <= EPSILON)
+                {
+                    partial_graph.mod_connection(vertex, c, sg::CONNECTED);
+                }
+            }
+
+        }
+        
+    }
+
 
     // create svg files of the Full Graph and the MST if testing
     #ifdef TESTING
         graph_to_svg(super_graph, "out/fullgraph.svg");
         graph_to_svg(minimum_spanning_tree, "out/mst.svg");
+        graph_to_svg(partial_graph, "out/dungeon_hallways.svg");
     #endif
 
 }

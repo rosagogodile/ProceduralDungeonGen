@@ -23,7 +23,6 @@
 #include <functional>
 #include <unordered_set>
 #include <unordered_map>
-// #include <tuple>
 
 #include "bytematrix2d.h"
 #include "simplegraph.h"
@@ -40,6 +39,10 @@
 // from `<limits>`
 #define DOUBLE_INF std::numeric_limits<double>::infinity()
 
+// probability of a connection not in the mst being included in the dungeon hall graph
+// needs to be between 0 and 1
+#define INCLUSION_PROB 0.1567
+
 // define this if the program is being tested
 // if this is defined, extra info will be printed out from the functions defined in `dungeonmap.cpp`
 #define TESTING
@@ -48,7 +51,7 @@
 // scaling of the svg file:
 #define SVG_RESOLUTION 10
 // color of the points:
-#define SVG_POINT_COLOR "#36f739"
+#define SVG_POINT_COLOR "#36F739"
 // color of the connections
 #define SVG_CONNECTION_COLOR "#AF0A10"
 
