@@ -1,5 +1,5 @@
 /* Rosa Knowles
- * 10/27/2025
+ * 10/31/2025
  * Definitions for the methods of `DungeonMap`
  */
 
@@ -790,4 +790,12 @@ void DungeonMap::generate(int32_t seed)
             cout << endl;
         }
     #endif
+
+
+    // create svg files of the Full Graph and the MST if testing
+    #ifdef TESTING
+        graph_to_svg(super_graph, "out/fullgraph.svg");
+        graph_to_svg(minimum_spanning_tree, "out/mst.svg");
+    #endif
+
 }

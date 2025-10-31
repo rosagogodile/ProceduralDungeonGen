@@ -44,6 +44,14 @@
 // if this is defined, extra info will be printed out from the functions defined in `dungeonmap.cpp`
 #define TESTING
 
+// SVG DEFINES:
+// scaling of the svg file:
+#define SVG_RESOLUTION 10
+// color of the points:
+#define SVG_POINT_COLOR "#36f739"
+// color of the connections
+#define SVG_CONNECTION_COLOR "#AF0A10"
+
 // ------
 
 
@@ -149,5 +157,9 @@ class DungeonMap
         // generates the dungeon
         void generate(int32_t seed);
 };
+
+// function to generate an svg file from a graph
+// will likely only be used when testing
+void graph_to_svg(const sg::SimpleGraph<CoordinatePair> & graph, std::string filepath);
 
 #endif

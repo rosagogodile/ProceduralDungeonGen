@@ -1,5 +1,5 @@
 # Rosa Knowles 
-# 10/13/2025
+# 10/31/2025
 # Makefile for the procedural dungeon generator
 
 OUTPUT_FOLDER := out
@@ -17,9 +17,9 @@ txt: $(OUTPUT_FOLDER)/$(TARGET).exe
 # compiles the dungeon gen library into an object file
 # packs it into a static library using the archiver command 
 # removes the object file
-DUNGEONGEN_FILES := bytematrix2d.cpp dungeonmap.cpp
+DUNGEONGEN_FILES := svghandler.cpp bytematrix2d.cpp dungeonmap.cpp
 DUNGEONGEN_OBJS  := $(DUNGEONGEN_FILES:.cpp=.o)
-$(OUTPUT_FOLDER)/libdungeongen.a: dungeongen.h $(DUNGEONGEN_FILES)
+$(OUTPUT_FOLDER)/libdungeongen.a: dungeongen.h bytematrix2d.h simplegraph.h $(DUNGEONGEN_FILES)
 	g++ -c $(DUNGEONGEN_FILES)
 	ar rcs $(OUTPUT_FOLDER)/libdungeongen.a $(DUNGEONGEN_OBJS)
 	rm -f *.o
@@ -34,4 +34,5 @@ clean:
 	rm -f $(OUTPUT_FOLDER)/$(TARGET).exe
 	rm -f $(OUTPUT_FOLDER)/*.a
 	rm -f *.o
+	rm -f $(OUTPUT_FOLDER)/*.svg
 	rm -f $(OUTPUT_FOLDER)/$(TARGET).txt
