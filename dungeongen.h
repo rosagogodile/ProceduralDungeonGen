@@ -43,6 +43,9 @@
 // needs to be between 0 and 1
 #define INCLUSION_PROB 0.1567
 
+// macro that evaluates the sign of a number
+#define SIGN(x) (std::signbit(x)) ? -1 : 1
+
 // define this if the program is being tested
 // if this is defined, extra info will be printed out from the functions defined in `dungeonmap.cpp`
 #define TESTING
@@ -62,7 +65,7 @@
 // namespace that stores all tiles and their corresponding IDs
 namespace TILES
 {
-    const uint8_t EMPTY         = '-';
+    const uint8_t EMPTY         = ' ';
     const uint8_t WALL          = 'X';
     const uint8_t FLOOR         = '0';
     const uint8_t PLAYER_SPAWN  = 'P';
@@ -148,6 +151,7 @@ class DungeonMap
         void generate_rooms();
         std::vector<Triangle> Bowyer_Watson();
         sg::SimpleGraph<CoordinatePair> Prim(const sg::SimpleGraph<CoordinatePair> & full_graph);
+        void generate_hallways(const sg::SimpleGraph<CoordinatePair> & hall_graph);
 
     public: 
         // constructor

@@ -180,8 +180,8 @@ void DungeonMap::place_room(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
  *      - Convert list of triangles into a graph!!!
  * Create a Minimum Spanning Tree from the triangulation
  *      - I will use Prim's algorithm for this: https://www.w3schools.com/dsa/dsa_algo_mst_prim.php
- * Randomly add connections from the Triangulation Graph into the tree
- * Use A* algorithm to find shortest path between each connected room, and build hallways from this
+ * Randomly add connections from the Triangulation Graph into the minimum spanning tree
+ * Generate Hallways from the connections in the graph
  * Use the vector of room coordinates to place objects in each of the rooms 
 
  */
@@ -683,6 +683,87 @@ sg::SimpleGraph<CoordinatePair> DungeonMap::Prim(const sg::SimpleGraph<Coordinat
 }
 
 
+/* Private Function
+ * PART 3
+ * Generate Hallways using the connections in the graph passed into this function
+ * Kind of a very inefficient function, but technology is advanced enough for me to not gaf
+ */
+void DungeonMap::generate_hallways(const sg::SimpleGraph<CoordinatePair> & hall_graph)
+{
+    using namespace std;
+
+    // get map of connections 
+    unordered_map<CoordinatePair, vector<CoordinatePair>> all_connections = hall_graph.get_connections();
+    // get list of vertices
+    vector<CoordinatePair> vertex_list = hall_graph.get_data_list();
+
+    // setup the floors for each of the hallways
+    for (const auto & vertex : vertex_list)
+    {
+        // iterate through each connection for the vertex
+        for (const auto & c : all_connections.at(vertex))
+        {
+            // determine whether or not `c` is placed to the side or above `vertex`
+            bool to_the_side = abs(vertex.X - c.X) >= abs(vertex.Y - c.Y);
+
+            // store the distance between `vertex` and `c`
+            CoordinatePair distance_vector;
+            distance_vector.X = c.X - vertex.X;
+            distance_vector.Y = c.Y - vertex.Y;
+
+            // store the current position
+            // we start at `vertex`
+            CoordinatePair current_pos;
+            current_pos.X = vertex.X;
+            current_pos.Y = vertex.Y;
+
+            // array that describes how the loop should place the hallway
+            int32_t movements[2];
+            if (to_the_side)
+            {
+                movements[0] = distance_vector.X;
+                movements[1] = distance_vector.Y; 
+            }
+            else
+            {
+                movements[0] = distance_vector.Y;
+                movements[1] = distance_vector.X;
+            }
+
+            // insert hallway into matrix
+            // does two iterations, once for the x-direction, once for the y-direction
+            for (uint16_t iteration = 0; iteration < 2; ++iteration)
+            {
+                // this looks gross but it works!!
+                for (uint16_t i = 0; i < abs(movements[iteration]); ++i)
+                {
+                    matrix_rep->set(current_pos.X, current_pos.Y, TILES::FLOOR);
+                    if ((to_the_side && iteration == 0) || (!to_the_side && iteration != 0))
+                    {
+                        matrix_rep->set(current_pos.X, current_pos.Y + 1, TILES::FLOOR);
+                        current_pos.X += SIGN(movements[iteration]);
+                    }
+                    else
+                    {
+                        matrix_rep->set(current_pos.X - 1, current_pos.Y, TILES::FLOOR);
+                        current_pos.Y += SIGN(movements[iteration]);
+                    }
+                }
+            }
+
+
+            // remove `vertex` from the connection vector for `c`
+            auto pos = find(all_connections.at(c).begin(), all_connections.at(c).end(), vertex);
+            if (pos != all_connections.at(c).end())
+                all_connections.at(c).erase(pos);
+
+        }
+
+    }
+
+}
+
+
 
 
 
@@ -840,5 +921,7 @@ void DungeonMap::generate(int32_t seed)
         graph_to_svg(minimum_spanning_tree, "out/mst.svg");
         graph_to_svg(partial_graph, "out/dungeon_hallways.svg");
     #endif
+
+    generate_hallways(partial_graph);
 
 }
