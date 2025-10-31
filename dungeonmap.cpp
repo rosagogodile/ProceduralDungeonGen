@@ -745,10 +745,11 @@ void DungeonMap::generate_hallways(const sg::SimpleGraph<CoordinatePair> & hall_
                     }
                     else
                     {
-                        matrix_rep->set(current_pos.X - 1, current_pos.Y, TILES::FLOOR);
+                        matrix_rep->set(current_pos.X + 1, current_pos.Y, TILES::FLOOR);
                         current_pos.Y += SIGN(movements[iteration]);
                     }
                 }
+
             }
 
 
@@ -759,6 +760,37 @@ void DungeonMap::generate_hallways(const sg::SimpleGraph<CoordinatePair> & hall_
 
         }
 
+    }
+
+    // add walls 
+    // check each empty space to see if it borders a floor
+    // if it borders a floor, add a wall
+    // this block of code is a nesting nightmare. i'm sorry
+    for (uint16_t i = 0; i < matrix_rep->get_width(); ++i)
+    {
+        for (uint16_t j = 0; j < matrix_rep->get_height(); ++j)
+        {
+            if (matrix_rep->get(i, j) == TILES::EMPTY)
+            {
+                uint8_t num_floors = 0;
+
+                for (int8_t a = -1; a <= 1; ++a)
+                {
+                    for (int8_t b = -1; b <= 1; ++b)
+                    {
+                        try
+                        {
+                            if (matrix_rep->get(i + a, j + b) == TILES::FLOOR)
+                                num_floors++;
+                        }
+                        catch(...){}
+                    }
+                }
+
+                if (num_floors > 0)
+                    matrix_rep->set(i, j, TILES::WALL);
+            }
+        }
     }
 
 }
