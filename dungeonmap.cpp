@@ -949,6 +949,8 @@ void DungeonMap::generate(int32_t seed)
 
     // create svg files of the Full Graph and the MST if testing
     #ifdef TESTING
+        sg::SimpleGraph<CoordinatePair> set_of_all_points(vertex_list);
+        graph_to_svg(set_of_all_points, "out/points.svg");
         graph_to_svg(super_graph, "out/fullgraph.svg");
         graph_to_svg(minimum_spanning_tree, "out/mst.svg");
         graph_to_svg(partial_graph, "out/dungeon_hallways.svg");
